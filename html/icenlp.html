@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<SCRIPT TYPE="text/javascript">
+<!--
+function popup(mylink, windowname)
+{
+if (! window.focus)return true;
+var href;
+if (typeof(mylink) == 'string')
+   href=mylink;
+else
+   href=mylink.href;
+window.open(href, windowname, 'width=600,height=500,scrollbars=yes');
+return false;
+}
+//-->
+</SCRIPT>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /> 
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <title>IceNLP - A Natural Language Processing Toolkit for Icelandic</title>
+</head>
+<body>
+    <h3><font color="blue">IceNLP<sup>1</sup> - A Natural Language Processing Toolkit for Icelandic</font> </h3>
+    Type in the text to analyzed:
+	<form action="/IceNLPWeb/process" method="POST">
+        <textarea name="query" id="query" rows="14" cols="60"></textarea><br>
+
+        <h4>Tokenizer:</h4>
+        
+        <div class="selectBox">
+                <input type="checkbox" name="showTokenize" value="true">Show output &nbsp;
+                <input type="checkbox" name="stricktTokenize" value="true" checked>Strict tokenization &nbsp;
+                Input form:
+                <select name="inputTokenize">
+                        <option value="2">Sentence per line</option>
+                        <option value="1">Token per line</option>
+                        <option value="3" selected>Other</option>
+                </select>
+        </div>
+        <h4>Tagger<sup>2</sup>:</h4>
+        <div class="selectBox">
+        <input type="radio" name="tagger" value="IceTagger" checked>IceTagger&nbsp;
+        <input type="radio" name="tagger" value="HMMIce">HMM+Ice
+        <input type="radio" name="tagger" value="IceHMM">Ice+HMM
+        <input type="radio" name="tagger" value="HMMIceHMM">HMM+Ice+HMM<br>
+        </div>
+        <h4>Tagging output:</h4>
+        <div class="selectBox">
+        <input type="checkbox" name="sentline" value="true" CHECKED>One sentence per line
+        <input type="checkbox" name="markunknown" value="true" CHECKED>Mark unknown words
+        <input type="checkbox" name="showlemma" value="true"> Show lemma<br />
+        </div>
+        <h4>Parsing output:</h4>
+        <div class="selectBox">
+        <input type="checkbox" name="functions" value="true" CHECKED>Syntactic functions
+        <input type="checkbox" name="phraseline" value="true" CHECKED>One phrase per line
+        <input type="checkbox" name="mergelabels" value="true">Merge function and phrase labels<br>
+        <input type="checkbox" name="agreement" value="true">Rely on feature agreement
+        <input type="checkbox" name="showerrors" value="true">Mark grammatical errors<br><br>
+        <input type="hidden" name="english" value="true">
+        </div>
+        <input type="submit" name="submit" id="submit" value="Analyse" />
+        &nbsp;<button onclick="popup('icenlp_help.html', 'help')">Help</button>
+        <p><SMALL><sup>1</sup>IceNLP is an open source project, see <a href="http://icenlp.sourceforge.net" target="*">http://icenlp.sourceforge.net</a></SMALL></p>
+        <p><SMALL><sup>2</sup>The dictionaries used by IceTagger are derived from the <i>Icelandic Frequency Dictionary</i> (IFD) corpus, and from a part of the <i>Database of Modern Icelandic Inflections</i> (BIN) - Copyright © Árni Magnússon Institute for Icelandic Studies.</SMALL></p>
+    </form>
+</body>
+</html>

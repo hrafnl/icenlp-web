@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module relativePaths="true" type="J2EE_WEB_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="false">
+    <output url="file://$MODULE_DIR$/classes" />
+    <exclude-output />
+    <exclude-exploded />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$APPLICATION_HOME_DIR$/lib/j2ee.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="IceNLPWeb" level="project" />
+  </component>
+  <component name="WebModuleBuildComponent">
+    <setting name="EXPLODED_URL" value="file://$MODULE_DIR$/exploded" />
+    <setting name="EXPLODED_ENABLED" value="true" />
+    <setting name="JAR_URL" value="file://$MODULE_DIR$/IceNLPWeb.war" />
+    <setting name="JAR_ENABLED" value="true" />
+  </component>
+  <component name="WebModuleProperties">
+    <containerElement type="library" level="module">
+      <attribute name="method" value="0" />
+      <attribute name="URI" value="&lt;N/A&gt;" />
+      <url>jar://$APPLICATION_HOME_DIR$/lib/j2ee.jar!/</url>
+    </containerElement>
+    <containerElement type="library" name="IceNLPWeb" level="project">
+      <attribute name="method" value="1" />
+      <attribute name="URI" value="/WEB-INF/lib" />
+    </containerElement>
+    <deploymentDescriptor name="context.xml" url="file://$MODULE_DIR$/META-INF/context.xml" optional="false" version="5.x" />
+    <deploymentDescriptor name="web.xml" url="file://$MODULE_DIR$/WEB-INF/web.xml" optional="false" version="2.5" />
+    <deploymentDescriptor url="file://$MODULE_DIR$/META-INF/context.xml">
+      <option name="DEFAULT_DIR" value="WEB-INF" />
+    </deploymentDescriptor>
+    <webroots>
+      <root url="file://$MODULE_DIR$/resources" relative="/" />
+      <root url="file://$MODULE_DIR$/WEB-INF" relative="/WEB-INF" />
+    </webroots>
+  </component>
+</module>
+

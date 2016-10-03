@@ -1,0 +1,78 @@
+package is.ru.cs.nlp.icenlp.web;
+
+import is.ru.cs.nlp.icenlp.facade.IceTaggerFacade;
+import is.ru.cs.nlp.icenlp.facade.TextSegments;
+import is.ru.cs.nlp.icenlp.facade.IceParserFacade;
+
+import java.io.PrintWriter;
+import java.io.IOException;
+import java.io.InputStream;
+
+/**
+ * Created by IntelliJ IDEA.
+ * User: Sverrir Sigmundarson
+ * Date: 17.12.2006
+ * Time: 15:48:47
+ * To change this template use File | Settings | File Templates.
+ */
+public class Tester
+{
+	public static void main( String[] args )
+	{
+		PrintWriter out = new PrintWriter( System.out );
+
+
+		out.write("Class Path:"+System.getProperty("user.dir")+"\n");
+		out.write("Lib Path:"+System.getProperty("file.separator")+"\n");
+
+		/*InputStream asStream2 = ClassLoader.getResourceAsStream( "/dict/tokenizer/lexicon.txt" );
+		int c2;
+		if( asStream2 != null )
+		{
+			while( (c2 = asStream2.read()) != -1 )
+			{
+				out.write((char)c2);
+			}
+
+			asStream2.close();
+		}*/
+
+		// Tag the query
+		long tagStart = 0;
+		TextSegments txtSeg = null;
+		long tagEnd = 0;
+		long parseStart = 0;
+		String parsed = null;
+		long parseEnd = 0;
+		try
+		{
+			tagStart = System.currentTimeMillis();
+			IceTaggerFacade itf = new IceTaggerFacade("/dict/icetagger/", "/dict/tokenizer/", "/ngrams/");
+			txtSeg = itf.tag( args[0] );
+			tagEnd = System.currentTimeMillis();
+
+			// Parse the query
+			parseStart = System.currentTimeMillis();
+			IceParserFacade ipf = new IceParserFacade();
+			parsed = ipf.parse( txtSeg.toString() );
+			parseEnd = System.currentTimeMillis();
+		}
+		catch( IOException e )
+		{
+			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+			return;
+		}
+
+		// todo: parse the return statements into xml? or simply create a javascript array?
+
+		//out.write( "<html><body>" );
+		out.write("Original: "+args[0]+"\n");
+		out.write("Tagged: "+txtSeg.toString()+"\n");
+		out.write( "Tagging time: "+(tagEnd-tagStart)+" msec.\n");
+		out.write("Parsed: "+parsed+"\n");
+		out.write( "Parsing time: "+(parseEnd-parseStart)+" msec.\n");
+		//out.write( "</body></html>" );
+
+		out.flush();                     
+	}
+}

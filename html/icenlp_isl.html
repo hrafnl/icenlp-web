@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<SCRIPT TYPE="text/javascript">
+<!--
+function popup(mylink, windowname)
+{
+if (! window.focus)return true;
+var href;
+if (typeof(mylink) == 'string')
+   href=mylink;
+else
+   href=mylink.href;
+window.open(href, windowname, 'width=600,height=500,scrollbars=yes');
+return false;
+}
+//-->
+</SCRIPT>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /> 
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <title>IceNLP - Málvinnslutól fyrir íslensku</title>
+</head>
+<body>
+    <h3><font color="blue">IceNLP<sup>1</sup> - Málvinnslutól fyrir íslensku</font> </h3>
+    Sláið inn textann sem skal greina:
+	<form action="/IceNLPWeb/process" method="POST">
+        <textarea name="query" id="query" rows="14" cols="60"></textarea><br>
+
+        <h4>Tilreiðari:</h4>
+        
+        <div class="selectBox">
+                <input type="checkbox" name="showTokenize" value="true">Sýna úttak  &nbsp;
+                <input type="checkbox" name="stricktTokenize" value="true" checked>Ströng tilreiðing &nbsp;
+                Form inntaks:
+                <select name="inputTokenize">
+                        <option value="2">Setning per línu</option>
+                        <option value="1">Tóki per línu</option>
+                        <option value="3" selected>Annað</option>
+                </select>
+        </div>
+        <h4>Markari<sup>2</sup>:</h4>
+        <div class="selectBox">
+        <input type="radio" name="tagger" value="IceTagger" checked>IceTagger&nbsp;
+        <input type="radio" name="tagger" value="HMMIce">HMM+Ice
+        <input type="radio" name="tagger" value="IceHMM">Ice+HMM
+        <input type="radio" name="tagger" value="HMMIceHMM">HMM+Ice+HMM<br>
+        </div>
+        <h4>Úttak úr mörkun:</h4>
+        <div class="selectBox">
+        <input type="checkbox" name="sentline" value="true" CHECKED>Ein setning í línu
+        <input type="checkbox" name="markunknown" value="true" CHECKED>Merkja óþekkt orð
+        <input type="checkbox" name="showlemma" value="true"> Sýna uppflettimynd<br />
+        </div>
+        <h4>Úttak úr þáttun:</h4>
+        <div class="selectBox">
+        <input type="checkbox" name="functions" value="true" CHECKED>Setningafræðileg hlutverk
+        <input type="checkbox" name="phraseline" value="true" CHECKED>Einn liður/hlutverk í línu
+        <input type="checkbox" name="mergelabels" value="true">Setja saman hlutverk og liði<br>
+        <input type="checkbox" name="agreement" value="true">Nota beygingarlegt samræmi
+        <input type="checkbox" name="showerrors" value="true">Merkja málfræðivillur<br><br>    
+        <input type="hidden" name="english" value="false">
+        </div>
+        <input type="submit" name="submit" id="submit" value="Greina" />
+        &nbsp;<button onclick="popup('icenlp_hjalp.html', 'help')">Hjálp</button>
+        <p><SMALL><sup>1</sup>IceNLP er opinn hugbúnaður, sjá <a href="http://icenlp.sourceforge.net" target="*">http://icenlp.sourceforge.net</a></SMALL></p>        
+        <p><SMALL><sup>2</sup>Orðasöfnin sem IceTagger notar byggja á gögnum málheildarinnar <i>Íslensk orðtíðnibók</i> og hluta úr gagnasafninu <i>Beygingarlýsing íslensks nútímamáls<i></i> (BÍN) - Copyright © Stofnun Árna Magnússonar í íslenskum fræðum.</SMALL></p>
+    </form>
+</body>
+</html>

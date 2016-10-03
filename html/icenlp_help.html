@@ -1,0 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>IceNLP - Help</title>
+</head>
+<body>
+<h2>Tokenization</h2>
+<p>
+First the tokenizer performs sentence segmentation and then it tokenizes each sentence.
+If 'strict tokenization' is chosen then it applies stricter rules when deciding what constitutes a token.
+</p>
+<h2>Tagging</h2>
+The linguistic rule-based tagger <i>IceTagger</i> is used for tagging.
+<p>You can either:
+    <ol>
+        <li>perform full disambiguation using <i>IceTagger</i>, or </li>
+        <li>use a HMM tagger for initial (word class) disambiguation and <i>IceTagger</i> for full disambiguation.</li>
+    </ol>
+</p>
+<h2>Parsing</h2>
+<p>Parsing is carried out by the incremental finite-state parser <i>IceParser</i>.
+The parser annotates phrase structure and syntactic functions, according to a shallow syntactic annotation scheme.
+The default behaviour of <i>IceParser</i> is to use word order to guide the analysis, but an option is provided to rely on feature agreement as well.
+The parser can also suggest grammatical errors in noun phrases and in subjects of verbs.    
+</p>
+</body>
+</html>

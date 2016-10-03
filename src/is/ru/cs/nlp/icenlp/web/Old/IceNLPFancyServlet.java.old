@@ -1,0 +1,219 @@
+package is.ru.cs.nlp.icenlp.web;
+
+import is.ru.cs.nlp.icenlp.facade.*;
+import is.ru.cs.nlp.icenlp.web.tagset.tags.TagsetTag;
+import is.ru.cs.nlp.icenlp.core.tokenizer.IceTokens;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+
+/**
+ * Created by IntelliJ IDEA.
+ * User: Sverrir Sigmundarson
+ * Date: 15.12.2006
+ * Time: 18:41:36
+ * To change this template use File | Settings | File Templates.
+ */
+public class IceNLPFancyServlet extends HttpServlet
+{
+
+	@Override
+	protected void doGet( HttpServletRequest request, HttpServletResponse response ) throws ServletException, IOException
+	{
+		doPost( request, response );
+	}
+
+	@Override
+	protected void doPost( HttpServletRequest request, HttpServletResponse response ) throws ServletException, IOException
+	{
+		final String dictPathTagger = "/dict/icetagger/";
+		final String dictPathToken = "/dict/tokenizer/";
+
+		// Get the request handles
+		String query = request.getParameter( "query" );
+
+		// todo: error handlers
+
+		// Return the fully tagged and parsed string
+		PrintWriter out = response.getWriter();
+
+		// We need to start by creating all of the necessary input streams for the dictionary files
+		boolean err = false;
+
+		InputStream isTokenDict = getClass().getResourceAsStream( dictPathToken + IceTaggerFacade.tokenDictionary );
+		if( isTokenDict == null )
+			err = printWebError( out, "Could not locate token dictionary at: " + dictPathToken + IceTaggerFacade.tokenDictionary );
+
+		InputStream isDictionaryOTB = getClass().getResourceAsStream( dictPathTagger + IceTaggerFacade.dictionaryOtb );
+		if( isDictionaryOTB == null )
+			err = printWebError( out, "Could not locate otb dictionary at: " + dictPathTagger + IceTaggerFacade.dictionaryOtb );
+
+		InputStream isEndingsMain = getClass().getResourceAsStream( dictPathTagger + IceTaggerFacade.endingsBaseDictionary );
+		if( isEndingsMain == null )
+			err = printWebError( out, "Could not locate endings main dictionary at: " + dictPathTagger + IceTaggerFacade.endingsBaseDictionary );
+
+		InputStream isEndingsDict = getClass().getResourceAsStream( dictPathTagger + IceTaggerFacade.endingsDictionary );
+		if( isEndingsDict == null )
+			err = printWebError( out, "Could not locate endings dictionary at: " + dictPathTagger + IceTaggerFacade.endingsDictionary );
+
+		InputStream isEndingsProper = getClass().getResourceAsStream( dictPathTagger + IceTaggerFacade.endingsProperDictionary );
+		if( isEndingsProper == null )
+			err = printWebError( out, "Could not locate endings proper dictionary at: " + dictPathTagger + IceTaggerFacade.endingsProperDictionary );
+
+		InputStream isPrefixes = getClass().getResourceAsStream( dictPathTagger + IceTaggerFacade.prefixesDictionary );
+		if( isPrefixes == null )
+			err = printWebError( out, "Could not locate prefixes dictionary at: " + dictPathTagger + IceTaggerFacade.prefixesDictionary );
+
+		InputStream isTagFrequency = getClass().getResourceAsStream( dictPathTagger + IceTaggerFacade.tagFrequencyFile );
+		if( isTagFrequency == null )
+			err = printWebError( out, "Could not locate tag frequency dictionary at: " + dictPathTagger + IceTaggerFacade.tagFrequencyFile );
+
+		InputStream isIdioms = getClass().getResourceAsStream( dictPathTagger + IceTaggerFacade.idiomsDictionary );
+		if( isIdioms == null )
+			err = printWebError( out, "Could not locate idioms dictionary at: " + dictPathTagger + IceTaggerFacade.idiomsDictionary );
+
+		InputStream isVerbPrep = getClass().getResourceAsStream( dictPathTagger + IceTaggerFacade.verbPrepDictionary );
+		if( isVerbPrep == null )
+			err = printWebError( out, "Could not locate verb prep dictionary at: " + dictPathTagger + IceTaggerFacade.verbPrepDictionary );
+
+		InputStream isVerbObj = getClass().getResourceAsStream( dictPathTagger + IceTaggerFacade.verbObjDictionary );
+		if( isVerbObj == null )
+			err = printWebError( out, "Could not locate verb obj dictionary at: " + dictPathTagger + IceTaggerFacade.verbObjDictionary );
+
+		InputStream isVerbAdverb = getClass().getResourceAsStream( dictPathTagger + IceTaggerFacade.verbAdverbDictionary );
+		if( isVerbAdverb == null )
+			err = printWebError( out, "Could not locate verb adverb dictionary at: " + dictPathTagger + IceTaggerFacade.verbAdverbDictionary );
+
+		InputStream isDictionaryMain = getClass().getResourceAsStream( dictPathTagger + IceTaggerFacade.dictionaryBase );
+		if( isDictionaryMain == null )
+			err = printWebError( out, "Could not locate dictionary main at: " + dictPathTagger + IceTaggerFacade.dictionaryBase );
+
+		// Tag the query
+		if( !err )
+		{
+			try
+			{
+				long tagStart = System.currentTimeMillis();
+				IceTaggerFacade itf = new IceTaggerFacade( isTokenDict,
+				                                           isEndingsMain, isEndingsDict, isEndingsProper,
+				                                           isPrefixes, isTagFrequency, isIdioms,
+				                                           isVerbPrep, isVerbObj, isVerbAdverb,
+				                                           isDictionaryMain, isDictionaryOTB );
+
+				//TextSegments txtSeg = itf.tag( query );
+                TextSegments txtSeg = new TextSegments();
+                IceTokens tokens = itf.tag(query);
+                long tagEnd = System.currentTimeMillis();
+
+				// Parse the query
+				long parseStart = System.currentTimeMillis();
+				IceParserFacade ipf = new IceParserFacade();
+				//String parsed = ipf.parse( txtSeg.toString() );
+                String parsed = ipf.parse( tokens.toString() );
+                long parseEnd = System.currentTimeMillis();
+
+				long parseFuncStart = System.currentTimeMillis();
+				//String parsedFunc = ipf.parse( txtSeg.toString(), true, true );
+                String parsedFunc = ipf.parse( tokens.toString(), true, true );
+                long parseFuncEnd = System.currentTimeMillis();
+
+				// todo: parse the return statements into xml? or simply create a javascript array?
+
+				out.write( "<html>" );
+				out.write( "<head>" );
+				out.write( "<link href=\"../style.css\" rel=\"stylesheet\" type=\"text/css\">" );
+				out.write( "<script src=\"../js/dw_event.js\" type=\"text/javascript\"></script>\n" +
+				           "<script src=\"../js/dw_viewport.js\" type=\"text/javascript\"></script>\n" +
+				           "<script src=\"../js/dw_tooltip.js\" type=\"text/javascript\"></script>\n" +
+				           "<script src=\"../tooltiphelper.js\" type=\"text/javascript\"></script>\n" );
+				out.write( "<script>" );
+				out.write( createTaggingJS( txtSeg ) );
+                //out.write( createTaggingJS( tokens ) );
+                out.write( "</script></head>" );
+				out.write( "<body onload=\"Tooltip.init()\">" );
+				out.write( "<p>Original:<br />" + query + "<p/>" );
+				//out.write( "<p>Tagged:<br />" + txtSeg.toString() + "<br />" );
+				out.write( "<p>Tagged:<br />" + createTaggingHTML( txtSeg ) + "<br />" );
+				out.write( "Tagging time: " + (tagEnd - tagStart) + " msec.</p>" );
+				out.write( "<p>Parsed:<br />" + parsed + "<br />" );
+				out.write( "Parsing time: " + (parseEnd - parseStart) + " msec.</p>" );
+				out.write( "<p>Functional Parsed:<br />" + parsedFunc.replaceAll( "\n", "<br />" ) + "<br />" );
+				out.write( "Parsing time: " + (parseFuncEnd - parseFuncStart) + " msec.</p>" );
+				out.write( "<p>Total time taken: " + ((tagEnd - tagStart) + (parseEnd - parseStart) + (parseFuncEnd - parseFuncStart)) + " msec." );
+				out.write( "</body></html>" );
+			}
+			catch( IceTaggerFacadeException e )
+			{
+				out.write( "Error occurred: " + e.getMessage() + "<br />" );
+				if( e.getCause() != null )
+					out.write( "Cause: " + e.getCause().getMessage() );
+			}
+
+
+		}
+
+	}
+
+	private boolean printWebError( PrintWriter out, String errorstring )
+	{
+		out.write( errorstring + "<br />" );
+		return true;
+	}
+
+	private String createTaggingJS( TextSegments txtseg )
+	{
+		StringBuilder txt = new StringBuilder();
+		int count = 0;
+		for( TextSegment segment : txtseg.getSegments() )
+		{
+			txt.append( createTooltipCode( segment, count ) );
+			txt.append( "\n" );
+			++count;
+		}
+		return txt.toString();
+	}
+
+	private String createTaggingHTML( TextSegments txtseg )
+	{
+		StringBuilder txt = new StringBuilder();
+		int count = 0;
+		for( TextSegment segment : txtseg.getSegments() )
+		{
+			txt.append( createTooltipHTML( segment, count ) );
+			txt.append( "\n" );
+			++count;
+		}
+
+		return txt.toString();
+	}
+
+	private String createTooltipCode( TextSegment segment, int tooltipnr )
+	{
+		String s = "var tt" + tooltipnr + " = '<div class=\"tp1\">";
+		try
+		{
+			TagsetTag tag = TagsetTag.CreateTag( segment.getMark(), "<br />" );
+			tag.ParseTag();
+			s += tag.toString();
+		}
+		catch( Exception e )
+		{
+			s += "Error while parsing: "+e.getMessage();
+			s += "<br />"+segment.getMark();
+		}
+		s += "</div>';";
+		return s;
+	}
+
+	private String createTooltipHTML( TextSegment segment, int tooltipnr )
+	{
+		String s = "<a href=\"#\" onmouseover=\"doTooltip(event,tt" + tooltipnr + ")\" onmouseout=\"hideTip()\">" + segment.getLexeme() + "</a> ";
+
+		return s;
+	}
+}

@@ -1,0 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>IceNLP - Hjálp</title>
+</head>
+<body>
+<h2>Tilreiðing</h2>
+<p>
+Tilreiðarinn framkvæmir fyrst setningaskiptingu og síðan skiptir hann setningum upp í einstaka tóka.
+Ef 'ströng tilreiðing' er valin þá beitir tilreiðarinn strangari reglum þegar hann ákveður skiptingu í einstaka tóka.
+</p>
+<h2>Mörkun</h2>
+Málfræðilegi reglumarkarinn <i>IceTagger</i> er notaður í mörkuninni.
+<p>Annaðhvort er hægt að:
+    <ol>
+        <li>framkvæma fulla einræðingu með <i>IceTagger</i>, eða</li>
+        <li>nota tölfræðimarkara (HMM) fyrir einræðingu á orðflokki og síðan <i>IceTagger</i> fyrir fulla einræðingu.</li>
+    </ol>
+</p>
+<h2>Þáttun</h2>
+<p>Þáttun er gerð með stigvaxandi (e. incremental) þáttara, <i>IceParser</i>, sem byggður er á endanlegum stöðuaðferðum (e. finite-state methods).
+Þáttarinn merkir setningarliði og setningafræðileg hlutverk miðað við tiltekið þáttunarskema.
+<i>IceParser</i> notar orðaröð til að stýra greiningu, en einnig er hægt er að láta hann taka mið af beygingarlegu samræmi.
+Þáttarinn getur jafnframt stungið upp á málfræðivillum í nafnliðum og í frumlögum.       
+</p>
+</body>
+</html>
