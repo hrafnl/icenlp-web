@@ -11,11 +11,8 @@
 	<property name="lib" location="lib" />
 
     <property name="include" location="${lib}/IceNLPCore.jar" />
-    <!--property name="j2ee" location="/usr/java/idea-7590/lib/rt/servlet.jar" /-->
-    <!--property name="j2ee" location="/usr/java/tomcat/common/lib/servlet-api.jar" /-->
-    <!--property name="j2ee" location="/usr/java/idea-7590/lib/j2ee.jar" /-->
-    <!--property name="j2ee" location="/usr/java/idea-9852/lib/javaee.jar" /-->    
-    <property name="j2ee" location="/usr/java/lib/javaee-api-6.0.jar" />    
+    <property name="j2ee" location="/Library/Tomcat/lib/servlet-api.jar" />
+    <!--property name="j2ee" location="/usr/java/lib/javaee-api-6.0.jar" /-->
 
     <property name="war_name" value="IceNLPWeb" />
     <property name="war_fullname" value="${war_name}.war" />
