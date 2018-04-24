@@ -13,6 +13,7 @@
 *.iws
 *.out
 *.java~
+*.xml~
 
 # Directories
 dist/
