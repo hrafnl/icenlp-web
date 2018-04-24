@@ -1,0 +1,21 @@
+# Special endings
+*.bin
+*.class
+*.pdf
+*.aux
+*.bbl
+*.blg
+*.log
+*.toc
+*.gz
+*.iml
+*.ipr
+*.iws
+*.out
+*.java~
+
+# Directories
+dist/
+build/
+.idea/
+
