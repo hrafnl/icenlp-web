@@ -38,15 +38,18 @@
     <target name="release-war" depends="compile" description="Releases a version of the IceNLP Web project">
 
 	<war destfile="${war_fullpath}" webxml="WEB-INF/web.xml">
-            <!-- Copies all files from the html directory-->
-            <fileset dir="html" ></fileset>
+            <!-- Copies all files from the html directory to the root of the war file-->
+            <fileset dir="html" />
+			<!-- Copies files from the dict directory to the WEB-INF directory of the war file-->
+			<webinf dir="dict" includes="**/*.dict" />
             <!-- All files in the lib directory will end up in the WEB-INF/lib directory of the war file. -->
             <lib dir="lib"/>
             <!-- All files in the META-INF directory will end up in the META-INF directory of the war file. -->
-            <metainf dir="META-INF"></metainf>
+            <metainf dir="META-INF"/>
             <!-- All files in the build directory will end up in the WEB-INF/classes directory of the war file. -->
             <!--classes dir="build"> <include name="**/*.class" /-->
-            <classes dir="build"> <include name="**/*.class" />
+            <classes dir="build">
+				<include name="**/*.class" />
             </classes>
         </war>
 	</target>

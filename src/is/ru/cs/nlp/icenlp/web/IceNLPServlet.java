@@ -12,6 +12,7 @@ import is.iclt.icenlp.core.tritagger.TriTaggerResources;
 import is.iclt.icenlp.core.utils.IceTag;
 import is.iclt.icenlp.core.utils.Lexicon;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServlet;
@@ -66,6 +67,11 @@ public class IceNLPServlet extends HttpServlet
 		if( iceResources.isVerbPrep == null ) throw new ServletException("Could not locate verb prep dictionary" );
 		if( iceResources.isVerbObj == null ) throw new ServletException("Could not locate verb obj dictionary");
 		if( iceResources.isVerbAdverb == null ) throw new ServletException("Could not locate verb adverb dictionary" );
+
+		// Overwrite the default dictionary with a one with data from BÍN
+        ServletContext context = getServletContext();
+        InputStream binDict = context.getResourceAsStream( "/WEB-INF/otbBin.dict" );
+		morphyResources.setDictionary(binDict);
         
         // For TriTagger
         TriTaggerResources triResources = new TriTaggerResources();
