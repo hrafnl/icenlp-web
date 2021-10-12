@@ -11,14 +11,15 @@
 	<property name="lib" location="lib" />
 
     <property name="include" location="${lib}/IceNLPCore.jar" />
-    <property name="j2ee" location="/Library/Tomcat/lib/servlet-api.jar" />
+    <property name="j2ee" location="/opt/tomcat/apache-tomcat-8.5.71/lib/servlet-api.jar" />
+    <property name="org.json" location="/opt/tomcat/apache-tomcat-8.5.71/lib/json-20210307.jar" />
     <!--property name="j2ee" location="/usr/java/lib/javaee-api-6.0.jar" /-->
 
     <property name="war_name" value="IceNLPWeb" />
     <property name="war_fullname" value="${war_name}.war" />
     <property name="war_fullpath" value="${dist}/${war_fullname}" />
 
-	<!-- property name="tomcat_path" value="C:\Program Files\Apache Software Foundation\Tomcat 6.0" /-->
+	<!--<property name="tomcat_path" value="/opt/tomcat/apache-tomcat-9.0.52/lib/servlet-api.jar" />-->
 
 	<target name="init" depends="clean">
 		<tstamp /> <!-- Create the timestamp for the build -->
@@ -30,7 +31,7 @@
 
 	<target name="compile" depends="init" description="Compiles all the source files">
 		<!--<javac srcdir="${src}" destdir="${build}" classpath="${include}" /> -->
-        	<javac srcdir="${src}" destdir="${build}" classpath="${include};${j2ee}" />
+		<javac srcdir="${src}" destdir="${build}" classpath="${org.json};${include};${j2ee}" />
     	</target>
 
 

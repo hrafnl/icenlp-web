@@ -24,6 +24,7 @@ import java.util.Enumeration;
 import is.iclt.icenlp.core.lemmald.Lemmald;
 import is.iclt.icenlp.core.iceparser.OutputFormatter;
 
+import org.json.*;
 
 /**
  * Web interface for tagging and parsing Icelandic text
@@ -110,45 +111,44 @@ public class IceNLPServlet extends HttpServlet
         this.lemmald = Lemmald.getInstance();
 
     }
-
+/*
     protected void doGet( HttpServletRequest request, HttpServletResponse response ) throws ServletException, IOException
 	{
 		doPost( request, response );
 	}
+	*/
 
     private void writeTaggedText(Sentences sents, PrintWriter out, boolean sentLine, boolean markUnknown, boolean english, boolean showLemma)
     {
-        out.write("<p>");
+        out.write(",\"annotations\":{");
+	out.write("\"token:\":[");
         for( Sentence sent : sents.getSentences() ) {
             ArrayList tokenList = sent.getTokens();
             for (int i=0; i<=tokenList.size()-1; i++) {
+		out.write("{");
                 IceTokenTags tok = (IceTokenTags)tokenList.get(i);
-                out.write(tok.lexeme + " ");
+                out.write("\"lex\":\""+tok.lexeme + "\"");
                 IceTag tag = (IceTag)tok.getFirstTag();
                 //out.write("<span title=" + "\"" + tag.annotation(english) + "\"" + ">" + tag + "</span>");
-                out.write("<span style=" + "\"" + "color: red" + "\"" + " title=" + "\"" + tag.annotation(english) + "\"" + ">" + tag + "</span> ");
+                out.write(",\"annotation\":\"" + tag.annotation(english)+"\"");
+                out.write(",\"tag\":\"" + tag +"\"");
                 if(showLemma)
-                    out.write("<span style=\"color: blue\">(" + this.lemmald.lemmatize(tok.lexeme,tok.getFirstTagStr()).getLemma()+")</span>");
+                    out.write(", \"lemmald\":" + this.lemmald.lemmatize(tok.lexeme,tok.getFirstTagStr()).getLemma()+"");
 
                 if (!sentLine) {
                     if (markUnknown && tok.isUnknown())
-                        out.write(" *");
-                    out.write("<br>");
+                	out.write(", \"unknown\": \"True\"");
                 }
-                else
-                   out.write(" ");
+                out.write("}");
+		if ( i!=tokenList.size()-1) out.write(",");
             }
-            out.write("<br>");
         }
-        out.write("</p>");
+	out.write("]");
+        out.write("}");
     }
 
     private void tokenize(String query, PrintWriter out, boolean english, boolean useStricktToken, int inputTokenizeType) throws IOException
     {
-        if (english)
-            out.write("<h3>Tokenisation:</h3>");
-        else
-            out.write("<h3>Tilreiðing:</h3>");
 
         Tokenizer tok = new Tokenizer(inputTokenizeType, useStricktToken, this.tokLex);
         segmentizer.segmentize(query);
@@ -162,9 +162,8 @@ public class IceNLPServlet extends HttpServlet
            tok.splitAbbreviations();
 
            for(Object token : tok.tokens)
-             out.write("<span>" + ((TokenTags)token).lexeme + "</span><br />");
+             out.write("{" + ((TokenTags)token).lexeme + "}");
 
-           out.write("<br />");
        }
     }
     
@@ -176,58 +175,82 @@ public class IceNLPServlet extends HttpServlet
         boolean mergeLabels=false, featureAgreement=false, showErrors=false;
         IceTagger.HmmModelType modelType = IceTagger.HmmModelType.none;
 
+
         // Get the request handles
         request.setCharacterEncoding(defaultEncoding);
-        String query = request.getParameter( "query" );
-        
-        boolean english = (request.getParameter("english").equals("true"));
 
-        if(request.getParameter("functions") != null)
-            functions = (request.getParameter("functions").equals("true"));
-        if(request.getParameter("phraseline") != null)
-            phraseLine = (request.getParameter("phraseline").equals("true"));
-        if(request.getParameter("mergelabels") != null)
-            mergeLabels = (request.getParameter("mergelabels").equals("true"));
-        if(request.getParameter("sentline") != null)
-            sentLine = (request.getParameter("sentline").equals("true"));
-        if(request.getParameter("markunknown") != null)
-            markUnknown = (request.getParameter("markunknown").equals("true"));
-        //if(request.getParameter("tagger") != null)
-        //    useHybrid = (request.getParameter("tagger").equals("Hybrid"));
-        // Set the model type in case using an HMM model
-        if(request.getParameter("tagger") != null) {
-            if (request.getParameter("tagger").equals("IceTagger"))
+	StringBuffer jb = new StringBuffer();
+	String line = null;
+	try {
+	BufferedReader reader = request.getReader();
+	while ((line = reader.readLine()) != null) {
+	jb.append(line);
+	}
+
+	} catch (Exception e) { /*report an error*/ }
+	//response.setContentType("json/application;charset="+defaultEncoding);
+	String str = jb.toString().replace("\\","");
+	str = str.substring(1,str.length()-1);
+	JSONObject json_request = new JSONObject(str);
+
+	
+	///*
+        //String query = request.getParameter( "query" );
+        String query = json_request.getString("query");
+        
+        //boolean english = (request.getParameter("english").equals("true"));
+        boolean english = true;
+        if(json_request.has("functions")) 
+        	functions = (json_request.getString("functions").equals("true"));
+        if(json_request.has("phraseline")) 
+        	phraseLine = (json_request.getString("phraseline").equals("true"));
+        if(json_request.has("mergelabels")) 
+        	mergeLabels = (json_request.getString("mergelabels").equals("true"));
+        if(json_request.has("sentline")) 
+        	sentLine = (json_request.getString("sentline").equals("true"));
+        if(json_request.has("markunknown")) 
+        	markUnknown = (json_request.getString("markunknown").equals("true"));
+        if(json_request.has("tagger")) 
+            if (json_request.getString("tagger").equals("IceTagger"))
                 modelType = IceTagger.HmmModelType.none;
-            else if (request.getParameter("tagger").equals("HMMIce"))
+            else if (json_request.getString("tagger").equals("HMMIce"))
                 modelType = IceTagger.HmmModelType.start;
-            else if (request.getParameter("tagger").equals("IceHMM"))
+            else if (json_request.getString("tagger").equals("IceHMM"))
                 modelType = IceTagger.HmmModelType.end;
-            else if (request.getParameter("tagger").equals("HMMIceHMM"))
+            else if (json_request.getString("tagger").equals("HMMIceHMM"))
                 modelType = IceTagger.HmmModelType.startend;
 
-        }
-        if(request.getParameter("showlemma") != null)
-            showLemma = (request.getParameter("showlemma").equals("true"));
-        if(request.getParameter("showerrors") != null)
-            showErrors = (request.getParameter("showerrors").equals("true"));
-        if(request.getParameter("agreement") != null)
-            featureAgreement = (request.getParameter("agreement").equals("true"));
+        if(json_request.has("showLemma")) 
+        	showLemma = (json_request.getString("showlemma").equals("true"));
+        if(json_request.has("showerrors")) 
+        	showErrors = (json_request.getString("showerrors").equals("true"));
+        if(json_request.has("agreement")) 
+        	featureAgreement = (json_request.getString("agreement").equals("true"));
 
 
         // Selection of tokenization.
-        if(request.getParameter("showTokenize") != null)
-            showTokenization = (request.getParameter("showTokenize").equals("true"));
+        if(json_request.has("showTokenize")) 
+		showTokenization = (json_request.getString("showTokenize").equals("true"));
         
         // Selection of the tokenizition type.
-        if(request.getParameter("stricktTokenize") != null)
-            strictTokenization = (request.getParameter("stricktTokenize").equals("true"));
-        int inputTokenizeType = Integer.parseInt(request.getParameter("inputTokenize"));
-
+        if(json_request.has("stricktTokenize"))
+        	strictTokenization = (json_request.getString("stricktTokenize").equals("true"));
+	int inputTokenizeType = 0;
+        if(json_request.has("inputTokenize")){
+        	inputTokenizeType = json_request.getInt("inputTokenize");
+	}
         // Return the fully tagged and parsed string
-        response.setContentType("text/html;charset="+defaultEncoding);
+	//response.setContentType("text/html;charset="+defaultEncoding);
+	response.setContentType("text/html;charset="+defaultEncoding);
         PrintWriter out = response.getWriter();
+	out.write("{");
+	out.write("\"response\":{");
+	out.write("\"type\":\"annotations\"");
         // Tag the query
         analyse(query, out, english, sentLine, markUnknown, functions, phraseLine, mergeLabels, featureAgreement, showErrors, modelType, showTokenization, strictTokenization,inputTokenizeType, showLemma);
+	out.write("}");
+	out.write("}");
+	out.flush();
 	}
 
     private void testDict()
@@ -243,49 +266,17 @@ public class IceNLPServlet extends HttpServlet
                          boolean functions, boolean phraseLine, boolean mergeLabels, boolean featureAgreement, boolean showErrors,
                          IceTagger.HmmModelType modelType, boolean showTokenization, boolean useStricktToken, int inputTokenizeType, boolean showLemma) throws IOException
     {
-        String headColorBegin = "<FONT COLOR=" + "\"" + "blue" +"\"" + ">";
-        String headColorEnd = "</FONT>";
-        out.write("<html>");
-        out.write("<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + defaultEncoding + "\"></head>");
-        out.write("<body>");
-        if (english) {
-           out.write("<h2> " + headColorBegin + " IceNLP - A Natural Language Processing Toolkit for Icelandic " + headColorEnd + " </h2>");
-           out.write("<h3>Original text:</h3>");
-        }
-        else {
-            out.write("<h2> " + headColorBegin + " IceNLP - Málvinnslutól fyrir íslensku " + headColorEnd + " </h2>");
-            out.write("<h3>Upphaflegur texti:</h3>");
-        }
-        out.write("<p>" + query + "</p>");
 
         // Only show output of tokenization?
         if (showTokenization)
            tokenize(query, out, english, useStricktToken, inputTokenizeType);
         // else do both tagging and parsing
         else {
-            if (english) {
-               out.write("<h3>Tagged text (position the mouse over tags to see explanations");
-               if (!sentLine && markUnknown)
-                  out.write("; unknown words are marked with *");
-               out.write("):</h3>");
-            }
-            else {
-                out.write("<h3>Markaður texti (bendið með músinni á mörk til að sjá skýringar");
-                if (!sentLine && markUnknown)
-                   out.write("; óþekkt orð eru merkt með *");
-                out.write("):</h3>");
-            }
 
             // Tag
             long tagStart = System.currentTimeMillis();
             //itf.useTriTagger(useHybrid);
             itf.setModelType(modelType);
-
-            // Debug
-            /*if (modelType == IceTagger.HmmModelType.none) out.write("Model: None\n");
-            else if (modelType == IceTagger.HmmModelType.start) out.write("Model: Start\n");
-            else if (modelType == IceTagger.HmmModelType.end) out.write("Model: End\n");
-            else if (modelType == IceTagger.HmmModelType.startend) out.write("Model: StartEnd\n");*/
 
             Sentences sents = itf.tag(query);
             long tagEnd = System.currentTimeMillis();
@@ -302,31 +293,14 @@ public class IceNLPServlet extends HttpServlet
 
             writeTaggedText(sents, out, sentLine, markUnknown, english, showLemma);
 
-            if (english)
-               out.write("<h3>Parsed text:</h3>");
-            else
-               out.write("<h3>Þáttaður texti:</h3>");
-            out.write("<p>" + parsed.replaceAll( "\n", "<br>") + "</p>" );
+	    //out.write(",\"parsed\":\"" + parsed.replaceAll( "\n", "|")+"\"");
 
-            if (english) {
-               out.write("<h3>Time:</h3>");
-               out.write("Tagging: " + (tagEnd - tagStart) + " msec.<br>");
-               out.write("Parsing: " + (parseEnd - parseStart) + " msec.<br>" );
-               out.write("Total: " + ((tagEnd - tagStart) + (parseEnd - parseStart)) + " msec." );
-            }
-            else {
-               out.write("<h3>Tími:</h3>");
-               out.write("Mörkun: " + (tagEnd - tagStart) + " msek.<br>");
-               out.write("Þáttun: " + (parseEnd - parseStart) + " msek.<br>" );
-               out.write("Heildartími: " + ((tagEnd - tagStart) + (parseEnd - parseStart)) + " msek." );
-            }
-		}
-        out.write( "</body></html>" );
+	}
     }
 
     private boolean printWebError( PrintWriter out, String errorstring )
 	{
-		out.write( errorstring + "<br />" );
+		out.write( errorstring + "\n" );
 		return true;
 	}
 }
