@@ -121,9 +121,12 @@ public class IceNLPServlet extends HttpServlet
     private void writeTaggedText(Sentences sents, PrintWriter out, boolean sentLine, boolean markUnknown, boolean english, boolean showLemma)
     {
         out.write(",\"annotations\":{");
-	out.write("\"token:\":[");
+	out.write("\"token\":[");
+	int j = 0;
         for( Sentence sent : sents.getSentences() ) {
             ArrayList tokenList = sent.getTokens();
+	    if (j!=0) out.write(",");
+	    j++;
             for (int i=0; i<=tokenList.size()-1; i++) {
 		out.write("{");
                 IceTokenTags tok = (IceTokenTags)tokenList.get(i);
@@ -142,6 +145,7 @@ public class IceNLPServlet extends HttpServlet
                 out.write("}");
 		if ( i!=tokenList.size()-1) out.write(",");
             }
+
         }
 	out.write("]");
         out.write("}");
@@ -166,6 +170,18 @@ public class IceNLPServlet extends HttpServlet
 
        }
     }
+    private String errorString(String namespace, String message) {
+	String error = "";
+	error += "{";
+	error += "\"code\":\""+namespace+"\",";
+	error += "\"text\":\"Default text to use for the {0} if no {1} can be found\",";
+	error += "\"params\":[\"message\", \"translation\"],";
+	error += "\"detail\":{";
+	error += "\"Error\":\""+message+"\"";
+	error += "}";
+    	error += "}";
+	return error;
+    }
     
     @Override
 	protected void doPost( HttpServletRequest request, HttpServletResponse response ) throws ServletException, IOException
@@ -178,6 +194,8 @@ public class IceNLPServlet extends HttpServlet
 
         // Get the request handles
         request.setCharacterEncoding(defaultEncoding);
+	response.setContentType("json/application");
+        PrintWriter out = response.getWriter();
 
 	StringBuffer jb = new StringBuffer();
 	String line = null;
@@ -196,6 +214,11 @@ public class IceNLPServlet extends HttpServlet
 	
 	///*
         //String query = request.getParameter( "query" );
+        if(!json_request.has("query")) {
+		out.write(errorString("iceland.icenlp.no.query", "'query' was not among the inputs"));
+		out.flush();
+		return;
+	}
         String query = json_request.getString("query");
         
         //boolean english = (request.getParameter("english").equals("true"));
@@ -241,8 +264,6 @@ public class IceNLPServlet extends HttpServlet
 	}
         // Return the fully tagged and parsed string
 	//response.setContentType("text/html;charset="+defaultEncoding);
-	response.setContentType("text/html;charset="+defaultEncoding);
-        PrintWriter out = response.getWriter();
 	out.write("{");
 	out.write("\"response\":{");
 	out.write("\"type\":\"annotations\"");

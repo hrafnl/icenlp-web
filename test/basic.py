@@ -2,6 +2,10 @@
 import requests
 import json 
 
+def run(json):
+    inp = str(json).replace('\'', '"')
+    return requests.post("http://localhost:8080/IceNLPWeb/process", json=inp)
+
 params = {
     'query':'hello',
     'stricktTokenize':'true',
@@ -15,8 +19,14 @@ params = {
         }
 
 json_object = json.dumps(params) 
-inp = str(params).replace('\'', '"')
-print(inp)
-print(json_object)
-r = requests.post("http://localhost:8080/IceNLPWeb/process", json=inp)
+r = run(params)
+json.loads(r.text)
 print(r.text)
+
+r = run({})
+json.loads(r.text)
+print(r.text)
+
+r = run({"query":"Hæ, ég er svangur. Hvað með þig?"})
+print(r.text)
+json.loads(r.text)
