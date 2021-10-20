@@ -17,10 +17,11 @@ ENV TOMCAT_VERSION=8.5.72
 RUN wget https://downloads.apache.org/tomcat/tomcat-8/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz
 RUN mkdir /opt/tomcat
 RUN tar xf apache-tomcat-${TOMCAT_VERSION}.tar.gz -C /opt/tomcat
+RUN cd /opt/tomcat && mv apache-tomcat-${TOMCAT_VERSION} tomcat
 
 ENV JAVA_TOOL_OPTIONS "-Dfile.encoding=UTF8"
-ENV CATALINA_HOME=/opt/tomcat/apache-tomcat-${TOMCAT_VERSION}
-ENV CATALINA_BASE=/opt/tomcat/apache-tomcat-${TOMCAT_VERSION}
+ENV CATALINA_HOME=/opt/tomcat/tomcat
+ENV CATALINA_BASE=/opt/tomcat/tomcat
 ENV JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 
 

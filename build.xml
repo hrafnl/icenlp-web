@@ -11,8 +11,8 @@
 	<property name="lib" location="lib" />
 
     <property name="include" location="${lib}/IceNLPCore.jar" />
-    <property name="j2ee" location="/opt/tomcat/apache-tomcat-8.5.71/lib/servlet-api.jar" />
-    <property name="org.json" location="/opt/tomcat/apache-tomcat-8.5.71/lib/json-20210307.jar" />
+    <property name="j2ee" location="/opt/tomcat/tomcat/lib/servlet-api.jar" />
+    <property name="org.json" location="/opt/tomcat/tomcat/lib/json-20210307.jar" />
     <!--property name="j2ee" location="/usr/java/lib/javaee-api-6.0.jar" /-->
 
     <property name="war_name" value="IceNLPWeb" />
