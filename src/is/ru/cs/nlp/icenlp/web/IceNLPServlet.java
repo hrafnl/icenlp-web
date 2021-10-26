@@ -25,6 +25,7 @@ import is.iclt.icenlp.core.lemmald.Lemmald;
 import is.iclt.icenlp.core.iceparser.OutputFormatter;
 
 import org.json.*;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Web interface for tagging and parsing Icelandic text
@@ -193,21 +194,23 @@ public class IceNLPServlet extends HttpServlet
 
 
         // Get the request handles
-        request.setCharacterEncoding(defaultEncoding);
 	response.setContentType("json/application");
+	response.setCharacterEncoding("UTF-8");
         PrintWriter out = response.getWriter();
 
-	StringBuffer jb = new StringBuffer();
+	String jb = new String();
 	String line = null;
 	try {
-	BufferedReader reader = request.getReader();
-	while ((line = reader.readLine()) != null) {
-	jb.append(line);
-	}
+		InputStream inputStream = request.getInputStream();
+		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream , StandardCharsets.UTF_8));
+		//BufferedReader reader = request.getReader();
+		while ((line = reader.readLine()) != null) {
+			jb += line;
+			String utf8String = new String(line.getBytes(StandardCharsets.UTF_8));
+		}
 
 	} catch (Exception e) { /*report an error*/ }
-	//response.setContentType("json/application;charset="+defaultEncoding);
-	String str = jb.toString().replace("\\","");
+	String str = jb.replace("\\\"","\"");
 	str = str.substring(1,str.length()-1);
 	JSONObject json_request = new JSONObject(str);
 

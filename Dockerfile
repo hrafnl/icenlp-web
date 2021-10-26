@@ -48,6 +48,8 @@ RUN cd $CATALINA_HOME/lib && wget https://repo1.maven.org/maven2/org/json/json/2
 #RUN rm -rf $CATALINA_HOME/webapps/ROOT/*
 #ADD . $CATALINA_HOME/webapps/ROOT/
 
+RUN cd $CATALINA_HOME/webapps/ROOT && rm * -r
+
 WORKDIR /icenlp-web
 COPY ./ .
 RUN cp /icenlp/core/dist/IceNLPCore.jar /icenlp-web/lib/
