@@ -40,7 +40,7 @@
 
 	<war destfile="${war_fullpath}" webxml="WEB-INF/web.xml">
             <!-- Copies all files from the html directory to the root of the war file-->
-            <fileset dir="html" />
+            <!--fileset dir="html" /-->
 			<!-- Copies files from the dict directory to the WEB-INF directory of the war file-->
 			<webinf dir="dict" includes="**/*.dict" />
             <!-- All files in the lib directory will end up in the WEB-INF/lib directory of the war file. -->
