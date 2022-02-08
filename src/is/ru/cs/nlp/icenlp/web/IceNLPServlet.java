@@ -121,8 +121,7 @@ public class IceNLPServlet extends HttpServlet
 
     private void writeTaggedText(Sentences sents, PrintWriter out, boolean sentLine, boolean markUnknown, boolean english, boolean showLemma)
     {
-        out.write(",\"annotations\":{");
-	out.write("\"token\":[");
+        out.write(",\"texts\":[");
 	int j = 0;
         for( Sentence sent : sents.getSentences() ) {
             ArrayList tokenList = sent.getTokens();
@@ -131,25 +130,26 @@ public class IceNLPServlet extends HttpServlet
             for (int i=0; i<=tokenList.size()-1; i++) {
 		out.write("{");
                 IceTokenTags tok = (IceTokenTags)tokenList.get(i);
-                out.write("\"lex\":\""+tok.lexeme + "\"");
+                out.write("\"content\":\""+tok.lexeme + "\"");
                 IceTag tag = (IceTag)tok.getFirstTag();
+		out.write(",\"features\":{");
                 //out.write("<span title=" + "\"" + tag.annotation(english) + "\"" + ">" + tag + "</span>");
-                out.write(",\"annotation\":\"" + tag.annotation(english)+"\"");
+                out.write("\"annotation\":\"" + tag.annotation(english)+"\"");
                 out.write(",\"tag\":\"" + tag +"\"");
-                if(showLemma)
-                    out.write(", \"lemmald\":" + this.lemmald.lemmatize(tok.lexeme,tok.getFirstTagStr()).getLemma()+"");
+		/*
+                //if(showLemma)
+                    //out.write(", \"lemmald\":\"" + this.lemmald.lemmatize(tok.lexeme,tok.getFirstTagStr()).getLemma()+"");
 
-                if (!sentLine) {
+                if (!sentLine) 
                     if (markUnknown && tok.isUnknown())
                 	out.write(", \"unknown\": \"True\"");
-                }
-                out.write("}");
+		*/
+		out.write("}}");
 		if ( i!=tokenList.size()-1) out.write(",");
             }
 
         }
-	out.write("]");
-        out.write("}");
+        out.write("]");
     }
 
     private void tokenize(String query, PrintWriter out, boolean english, boolean useStricktToken, int inputTokenizeType) throws IOException
@@ -194,7 +194,7 @@ public class IceNLPServlet extends HttpServlet
 
 
         // Get the request handles
-	response.setContentType("json/application");
+	response.setContentType("application/json");
 	response.setCharacterEncoding("UTF-8");
         PrintWriter out = response.getWriter();
 
@@ -211,18 +211,24 @@ public class IceNLPServlet extends HttpServlet
 
 	} catch (Exception e) { /*report an error*/ }
 	String str = jb.replace("\\\"","\"");
-	str = str.substring(1,str.length()-1);
-	JSONObject json_request = new JSONObject(str);
-
-	
-	///*
-        //String query = request.getParameter( "query" );
-        if(!json_request.has("query")) {
-		out.write(errorString("iceland.icenlp.no.query", "'query' was not among the inputs"));
+	JSONObject json_request;
+	try {
+		json_request = new JSONObject(str);
+	}
+	catch(org.json.JSONException e) {
+		out.write(errorString("iceland.icenlp.no.json", "Input needs to be valid json"));
 		out.flush();
 		return;
 	}
-        String query = json_request.getString("query");
+
+	///*
+        //String query = request.getParameter( "query" );
+        if(!json_request.has("content")) {
+		out.write(errorString("iceland.icenlp.no.query", "'content' was not among the inputs"));
+		out.flush();
+		return;
+	}
+        String query = json_request.getString("content");
         
         //boolean english = (request.getParameter("english").equals("true"));
         boolean english = true;
@@ -232,8 +238,8 @@ public class IceNLPServlet extends HttpServlet
         	phraseLine = (json_request.getString("phraseline").equals("true"));
         if(json_request.has("mergelabels")) 
         	mergeLabels = (json_request.getString("mergelabels").equals("true"));
-        if(json_request.has("sentline")) 
-        	sentLine = (json_request.getString("sentline").equals("true"));
+        //if(json_request.has("sentline")) 
+        	//sentLine = (json_request.getString("sentline").equals("true"));
         if(json_request.has("markunknown")) 
         	markUnknown = (json_request.getString("markunknown").equals("true"));
         if(json_request.has("tagger")) 
@@ -246,10 +252,10 @@ public class IceNLPServlet extends HttpServlet
             else if (json_request.getString("tagger").equals("HMMIceHMM"))
                 modelType = IceTagger.HmmModelType.startend;
 
-        if(json_request.has("showLemma")) 
-        	showLemma = (json_request.getString("showlemma").equals("true"));
-        if(json_request.has("showerrors")) 
-        	showErrors = (json_request.getString("showerrors").equals("true"));
+        //if(json_request.has("showLemma")) 
+        	//showLemma = (json_request.getString("showlemma").equals("true"));
+        //if(json_request.has("showerrors")) 
+        	//showErrors = (json_request.getString("showerrors").equals("true"));
         if(json_request.has("agreement")) 
         	featureAgreement = (json_request.getString("agreement").equals("true"));
 
@@ -269,7 +275,7 @@ public class IceNLPServlet extends HttpServlet
 	//response.setContentType("text/html;charset="+defaultEncoding);
 	out.write("{");
 	out.write("\"response\":{");
-	out.write("\"type\":\"annotations\"");
+	out.write("\"type\":\"texts\"");
         // Tag the query
         analyse(query, out, english, sentLine, markUnknown, functions, phraseLine, mergeLabels, featureAgreement, showErrors, modelType, showTokenization, strictTokenization,inputTokenizeType, showLemma);
 	out.write("}");

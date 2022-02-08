@@ -13,7 +13,7 @@ RUN apt-get update &&  apt-get install -y --no-install-recommends \
 ### Install tomcat ###
 RUN apt-get install -y wget
 # Put the newest version of tomcat, can be found:  https://downloads.apache.org/tomcat/tomcat-8/
-ENV TOMCAT_VERSION=8.5.72 
+ENV TOMCAT_VERSION=8.5.75 
 RUN wget https://downloads.apache.org/tomcat/tomcat-8/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz
 RUN mkdir /opt/tomcat
 RUN tar xf apache-tomcat-${TOMCAT_VERSION}.tar.gz -C /opt/tomcat

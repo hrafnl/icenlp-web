@@ -7,7 +7,7 @@ def run(json):
     return requests.post("http://localhost:8080/IceNLPWeb/process", json=inp)
 
 params = {
-    'query':'hæ, ég heiti haldór',
+    'content':'hæ, ég heiti haldór',
     'stricktTokenize':'true',
     'inputTokenize':3,
     'tagger':'IceTagger',
@@ -18,10 +18,15 @@ params = {
     'submit':'Analyse'
         }
 
-json_object = json.dumps(params) 
+inp = {"content":"Hæ, ég er svangur. Hvað með þig?"}
+r = run(inp)
+print("INPUT: "+str(inp))
+print("OUTPUT: "+r.text)
+json.loads(r.text)
+
 r = run(params)
 print("INPUT: "+str(params))
-print(r.text)
+print("OUTPUT: "+r.text)
 #print("OUTPUT: "+r.text.encode('utf-8').decode('unicode-escape'))
 json.loads(r.text)
 
@@ -30,8 +35,3 @@ print("INPUT: "+str({}))
 print("OUTPUT: "+r.text)
 json.loads(r.text)
 
-inp = {"query":"Hæ, ég er svangur. Hvað með þig?"}
-r = run(inp)
-print("INPUT: "+str(inp))
-print("OUTPUT: "+r.text)
-json.loads(r.text)
