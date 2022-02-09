@@ -133,17 +133,13 @@ public class IceNLPServlet extends HttpServlet
                 out.write("\"content\":\""+tok.lexeme + "\"");
                 IceTag tag = (IceTag)tok.getFirstTag();
 		out.write(",\"features\":{");
-                //out.write("<span title=" + "\"" + tag.annotation(english) + "\"" + ">" + tag + "</span>");
                 out.write("\"annotation\":\"" + tag.annotation(english)+"\"");
                 out.write(",\"tag\":\"" + tag +"\"");
-		/*
-                //if(showLemma)
-                    //out.write(", \"lemmald\":\"" + this.lemmald.lemmatize(tok.lexeme,tok.getFirstTagStr()).getLemma()+"");
+                out.write(",\"lemma\":\"" + this.lemmald.lemmatize(tok.lexeme,tok.getFirstTagStr()).getLemma()+"\"");
 
-                if (!sentLine) 
-                    if (markUnknown && tok.isUnknown())
-                	out.write(", \"unknown\": \"True\"");
-		*/
+	    	if (tok.isUnknown())
+		  out.write(",\"unknown\":\"True\"");
+
 		out.write("}}");
 		if ( i!=tokenList.size()-1) out.write(",");
             }
@@ -232,6 +228,7 @@ public class IceNLPServlet extends HttpServlet
         
         //boolean english = (request.getParameter("english").equals("true"));
         boolean english = true;
+	/*
         if(json_request.has("functions")) 
         	functions = (json_request.getString("functions").equals("true"));
         if(json_request.has("phraseline")) 
@@ -259,7 +256,6 @@ public class IceNLPServlet extends HttpServlet
         if(json_request.has("agreement")) 
         	featureAgreement = (json_request.getString("agreement").equals("true"));
 
-
         // Selection of tokenization.
         if(json_request.has("showTokenize")) 
 		showTokenization = (json_request.getString("showTokenize").equals("true"));
@@ -267,10 +263,11 @@ public class IceNLPServlet extends HttpServlet
         // Selection of the tokenizition type.
         if(json_request.has("stricktTokenize"))
         	strictTokenization = (json_request.getString("stricktTokenize").equals("true"));
-	int inputTokenizeType = 0;
         if(json_request.has("inputTokenize")){
         	inputTokenizeType = json_request.getInt("inputTokenize");
 	}
+*/
+	int inputTokenizeType = 0;
         // Return the fully tagged and parsed string
 	//response.setContentType("text/html;charset="+defaultEncoding);
 	out.write("{");
