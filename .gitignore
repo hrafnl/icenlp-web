@@ -20,3 +20,5 @@ dist/
 build/
 .idea/
 
+# Specific files
+/aether-ant-tasks-uber.jar

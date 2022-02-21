@@ -1,5 +1,11 @@
 package is.ru.cs.nlp.icenlp.web;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.elg.model.Failure;
+import eu.elg.model.Markup;
+import eu.elg.model.StandardMessages;
+import eu.elg.model.requests.TextRequest;
+import eu.elg.model.responses.TextsResponse;
 import is.iclt.icenlp.core.icemorphy.IceMorphyLexicons;
 import is.iclt.icenlp.core.icemorphy.IceMorphyResources;
 import is.iclt.icenlp.core.icetagger.IceTagger;
@@ -24,8 +30,8 @@ import java.util.Enumeration;
 import is.iclt.icenlp.core.lemmald.Lemmald;
 import is.iclt.icenlp.core.iceparser.OutputFormatter;
 
-import org.json.*;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * Web interface for tagging and parsing Icelandic text
@@ -44,6 +50,8 @@ public class IceNLPServlet extends HttpServlet
     private Segmentizer segmentizer = null;
     Lemmald lemmald = null;
     OutputFormatter.OutputType outType=OutputFormatter.OutputType.plain;
+
+    private ObjectMapper mapper = new ObjectMapper();
     
 
     @Override
@@ -119,33 +127,31 @@ public class IceNLPServlet extends HttpServlet
 	}
 	*/
 
-    private void writeTaggedText(Sentences sents, PrintWriter out, boolean sentLine, boolean markUnknown, boolean english, boolean showLemma)
+    private List<TextsResponse.Text> writeTaggedText(Sentences sents, boolean sentLine, boolean markUnknown, boolean english, boolean showLemma)
     {
-        out.write(",\"texts\":[");
+      List<TextsResponse.Text> result = new ArrayList<>();
 	int j = 0;
         for( Sentence sent : sents.getSentences() ) {
+          List<TextsResponse.Text> tokensInSentence = new ArrayList<>();
             ArrayList tokenList = sent.getTokens();
-	    if (j!=0) out.write(",");
 	    j++;
             for (int i=0; i<=tokenList.size()-1; i++) {
-		out.write("{");
                 IceTokenTags tok = (IceTokenTags)tokenList.get(i);
-                out.write("\"content\":\""+tok.lexeme + "\"");
+                TextsResponse.Text thisTok = new TextsResponse.Text().withContent(tok.lexeme);
                 IceTag tag = (IceTag)tok.getFirstTag();
-		out.write(",\"features\":{");
-                out.write("\"annotation\":\"" + tag.annotation(english)+"\"");
-                out.write(",\"tag\":\"" + tag +"\"");
-                out.write(",\"lemma\":\"" + this.lemmald.lemmatize(tok.lexeme,tok.getFirstTagStr()).getLemma()+"\"");
+                Markup markup = new Markup()
+                        .withFeature("annotation", tag.annotation(english))
+                        .withFeature("tag", tag.toString())
+                        .withFeature("lemma", this.lemmald.lemmatize(tok.lexeme,tok.getFirstTagStr()).getLemma());
 
 	    	if (tok.isUnknown())
-		  out.write(",\"unknown\":\"True\"");
-
-		out.write("}}");
-		if ( i!=tokenList.size()-1) out.write(",");
+		  markup.withFeature("unknown", "True");
+              thisTok.setMarkup(markup);
+              tokensInSentence.add(thisTok);
             }
-
+            result.add(new TextsResponse.Text().withTexts(tokensInSentence).withRole("sentence"));
         }
-        out.write("]");
+        return result;
     }
 
     private void tokenize(String query, PrintWriter out, boolean english, boolean useStricktToken, int inputTokenizeType) throws IOException
@@ -167,19 +173,7 @@ public class IceNLPServlet extends HttpServlet
 
        }
     }
-    private String errorString(String namespace, String message) {
-	String error = "";
-	error += "{";
-	error += "\"code\":\""+namespace+"\",";
-	error += "\"text\":\"Default text to use for the {0} if no {1} can be found\",";
-	error += "\"params\":[\"message\", \"translation\"],";
-	error += "\"detail\":{";
-	error += "\"Error\":\""+message+"\"";
-	error += "}";
-    	error += "}";
-	return error;
-    }
-    
+
     @Override
 	protected void doPost( HttpServletRequest request, HttpServletResponse response ) throws ServletException, IOException
 	{
@@ -190,41 +184,23 @@ public class IceNLPServlet extends HttpServlet
 
 
         // Get the request handles
-	response.setContentType("application/json");
-	response.setCharacterEncoding("UTF-8");
-        PrintWriter out = response.getWriter();
+//	response.setContentType("application/json");
+//	response.setCharacterEncoding("UTF-8");
+//        PrintWriter out = response.getWriter();
 
-	String jb = new String();
-	String line = null;
-	try {
-		InputStream inputStream = request.getInputStream();
-		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream , StandardCharsets.UTF_8));
-		//BufferedReader reader = request.getReader();
-		while ((line = reader.readLine()) != null) {
-			jb += line;
-			String utf8String = new String(line.getBytes(StandardCharsets.UTF_8));
+		TextRequest elgRequest = null;
+		try {
+			InputStream inputStream = request.getInputStream();
+			elgRequest = mapper.readValue(inputStream, TextRequest.class);
+		} catch (Exception e) {
+			// invalid request
+			response.setContentType("application/json");
+			response.setStatus(400);
+			mapper.writeValue(response.getOutputStream(), new Failure().withErrors(StandardMessages.elgRequestInvalid()).asMessage());
+			return;
 		}
 
-	} catch (Exception e) { /*report an error*/ }
-	String str = jb.replace("\\\"","\"");
-	JSONObject json_request;
-	try {
-		json_request = new JSONObject(str);
-	}
-	catch(org.json.JSONException e) {
-		out.write(errorString("iceland.icenlp.no.json", "Input needs to be valid json"));
-		out.flush();
-		return;
-	}
-
-	///*
-        //String query = request.getParameter( "query" );
-        if(!json_request.has("content")) {
-		out.write(errorString("iceland.icenlp.no.query", "'content' was not among the inputs"));
-		out.flush();
-		return;
-	}
-        String query = json_request.getString("content");
+        String query = elgRequest.getContent();
         
         //boolean english = (request.getParameter("english").equals("true"));
         boolean english = true;
@@ -270,14 +246,25 @@ public class IceNLPServlet extends HttpServlet
 	int inputTokenizeType = 0;
         // Return the fully tagged and parsed string
 	//response.setContentType("text/html;charset="+defaultEncoding);
-	out.write("{");
-	out.write("\"response\":{");
-	out.write("\"type\":\"texts\"");
-        // Tag the query
-        analyse(query, out, english, sentLine, markUnknown, functions, phraseLine, mergeLabels, featureAgreement, showErrors, modelType, showTokenization, strictTokenization,inputTokenizeType, showLemma);
-	out.write("}");
-	out.write("}");
-	out.flush();
+//	out.write("{");
+//	out.write("\"response\":{");
+//	out.write("\"type\":\"texts\"");
+	try {
+		// Tag the query
+		TextsResponse textsResponse = analyse(query, english, sentLine, markUnknown, functions, phraseLine, mergeLabels, featureAgreement, showErrors, modelType, showTokenization, strictTokenization, inputTokenizeType, showLemma);
+
+		response.setContentType("application/json");
+		mapper.writeValue(response.getOutputStream(), textsResponse);
+	} catch (Exception e) {
+		e.printStackTrace();
+		response.setContentType("application/json");
+		response.setStatus(500);
+		mapper.writeValue(response.getOutputStream(), new Failure().withErrors(
+				StandardMessages.elgServiceInternalError(e.getMessage())).asMessage());
+	}
+//	out.write("}");
+//	out.write("}");
+//	out.flush();
 	}
 
     private void testDict()
@@ -289,16 +276,16 @@ public class IceNLPServlet extends HttpServlet
        }
     }
     
-    private void analyse(String query, PrintWriter out, boolean english, boolean sentLine, boolean markUnknown,
-                         boolean functions, boolean phraseLine, boolean mergeLabels, boolean featureAgreement, boolean showErrors,
-                         IceTagger.HmmModelType modelType, boolean showTokenization, boolean useStricktToken, int inputTokenizeType, boolean showLemma) throws IOException
+    private TextsResponse analyse(String query, boolean english, boolean sentLine, boolean markUnknown,
+                                  boolean functions, boolean phraseLine, boolean mergeLabels, boolean featureAgreement, boolean showErrors,
+                                  IceTagger.HmmModelType modelType, boolean showTokenization, boolean useStricktToken, int inputTokenizeType, boolean showLemma) throws IOException
     {
 
         // Only show output of tokenization?
-        if (showTokenization)
-           tokenize(query, out, english, useStricktToken, inputTokenizeType);
-        // else do both tagging and parsing
-        else {
+//        if (showTokenization)
+//           tokenize(query, out, english, useStricktToken, inputTokenizeType);
+//        // else do both tagging and parsing
+//        else {
 
             // Tag
             long tagStart = System.currentTimeMillis();
@@ -318,11 +305,11 @@ public class IceNLPServlet extends HttpServlet
             String parsed = ipf.parse( sents.toString(), outType, functions, featureAgreement, showErrors, mergeLabels );
             long parseEnd = System.currentTimeMillis();
 
-            writeTaggedText(sents, out, sentLine, markUnknown, english, showLemma);
+            return new TextsResponse().withTexts(writeTaggedText(sents, sentLine, markUnknown, english, showLemma));
 
 	    //out.write(",\"parsed\":\"" + parsed.replaceAll( "\n", "|")+"\"");
 
-	}
+//	}
     }
 
     private boolean printWebError( PrintWriter out, String errorstring )
