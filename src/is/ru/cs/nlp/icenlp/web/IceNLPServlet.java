@@ -154,10 +154,11 @@ public class IceNLPServlet extends HttpServlet
         return result;
     }
 
-    private void tokenize(String query, PrintWriter out, boolean english, boolean useStricktToken, int inputTokenizeType) throws IOException
+    private List<TextsResponse.Text> tokenize(String query, boolean english, boolean useStricktToken, int inputTokenizeType) throws IOException
     {
 
         Tokenizer tok = new Tokenizer(inputTokenizeType, useStricktToken, this.tokLex);
+		List<TextsResponse.Text> result = new ArrayList<>();
         segmentizer.segmentize(query);
         while(segmentizer.hasMoreSentences())
         {
@@ -168,10 +169,14 @@ public class IceNLPServlet extends HttpServlet
 
            tok.splitAbbreviations();
 
+		   List<TextsResponse.Text> tokensInSentence = new ArrayList<>();
            for(Object token : tok.tokens)
-             out.write("{" + ((TokenTags)token).lexeme + "}");
+             tokensInSentence.add(new TextsResponse.Text().withContent(((TokenTags)token).lexeme));
+
+			result.add(new TextsResponse.Text().withTexts(tokensInSentence).withRole("sentence"));
 
        }
+		return result;
     }
 
     @Override
@@ -282,10 +287,10 @@ public class IceNLPServlet extends HttpServlet
     {
 
         // Only show output of tokenization?
-//        if (showTokenization)
-//           tokenize(query, out, english, useStricktToken, inputTokenizeType);
-//        // else do both tagging and parsing
-//        else {
+        if (showTokenization)
+			return new TextsResponse().withTexts(tokenize(query, english, useStricktToken, inputTokenizeType));
+        // else do both tagging and parsing
+        else {
 
             // Tag
             long tagStart = System.currentTimeMillis();
@@ -309,7 +314,7 @@ public class IceNLPServlet extends HttpServlet
 
 	    //out.write(",\"parsed\":\"" + parsed.replaceAll( "\n", "|")+"\"");
 
-//	}
+		}
     }
 
     private boolean printWebError( PrintWriter out, String errorstring )
