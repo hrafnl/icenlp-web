@@ -259,7 +259,7 @@ public class IceNLPServlet extends HttpServlet
 		TextsResponse textsResponse = analyse(query, english, sentLine, markUnknown, functions, phraseLine, mergeLabels, featureAgreement, showErrors, modelType, showTokenization, strictTokenization, inputTokenizeType, showLemma);
 
 		response.setContentType("application/json");
-		mapper.writeValue(response.getOutputStream(), textsResponse);
+		mapper.writeValue(response.getOutputStream(), textsResponse.asMessage());
 	} catch (Exception e) {
 		e.printStackTrace();
 		response.setContentType("application/json");
