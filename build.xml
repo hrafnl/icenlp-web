@@ -54,7 +54,7 @@
 
 	<target name="compile" depends="init" description="Compiles all the source files">
 		<!--<javac srcdir="${src}" destdir="${build}" classpath="${include}" /> -->
-        	<javac srcdir="${src}" destdir="${build}">
+        	<javac srcdir="${src}" destdir="${build}" source="1.8" target="1.8">
                   <classpath>
                     <path refid="mvn.compile.classpath" />
                     <fileset refid="include" />
