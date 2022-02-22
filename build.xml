@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="IceNLPWeb" default="release-war" basedir=".">
+<project name="IceNLPWeb" default="release-war" basedir="." xmlns:maven="antlib:org.eclipse.aether.ant">
 	<description>
 		Compiles a release version of the IceNLP Web Project as a single jar file
 	</description>
@@ -10,16 +10,39 @@
 	<property name="dist" location="dist" />
 	<property name="lib" location="lib" />
 
-    <property name="include" location="${lib}/IceNLPCore.jar" />
-    <property name="j2ee" location="/opt/tomcat/tomcat/lib/servlet-api.jar" />
-    <property name="org.json" location="/opt/tomcat/tomcat/lib/json-20210307.jar" />
+    <fileset id="include" dir="${lib}" includes="*.jar"/>
     <!--property name="j2ee" location="/usr/java/lib/javaee-api-6.0.jar" /-->
 
     <property name="war_name" value="IceNLPWeb" />
     <property name="war_fullname" value="${war_name}.war" />
     <property name="war_fullpath" value="${dist}/${war_fullname}" />
 
-	<!--<property name="tomcat_path" value="/opt/tomcat/apache-tomcat-9.0.52/lib/servlet-api.jar" />-->
+	<!-- download a copy of aether ant tasks if we don't have them already
+		     NOTE: at some point switch to using Apache Maven Resolver for this -->
+	<get src="http://search.maven.org/remotecontent?filepath=org/eclipse/aether/aether-ant-tasks/1.0.0.v20140518/aether-ant-tasks-1.0.0.v20140518-uber.jar" dest="aether-ant-tasks-uber.jar" verbose="true" skipexisting="true" />
+	<fail message="Checksum mismatch for 'aether-ant-tasks-uber.jar'. Please delete it and rerun ant to redownload.">
+		<condition>
+			<not>
+				<checksum file="aether-ant-tasks-uber.jar" algorithm="SHA" property="95dadd03392a75564904da45108cf048abe6e5bb" verifyproperty="checksum.matches" />
+			</not>
+		</condition>
+	</fail>
+
+	<path id="aether-ant-tasks.classpath" path="aether-ant-tasks-uber.jar" />
+	<typedef resource="org/eclipse/aether/ant/antlib.xml" uri="antlib:org.eclipse.aether.ant" classpathref="aether-ant-tasks.classpath" />
+
+	<!-- build the classpath via maven -->
+	<maven:mirror id="central-https" url="https://repo1.maven.org/maven2" mirrorOf="central" />
+	<maven:resolve>
+		<maven:dependencies>
+			<maven:dependency groupid="javax.servlet" artifactid="javax.servlet-api" version="3.1.0" scope="provided" />
+			<maven:dependency groupid="eu.european-language-grid" artifactid="elg-java-bindings" version="1.0.0" />
+			<maven:dependency groupid="com.fasterxml.jackson.core" artifactid="jackson-databind" version="2.13.1" />
+			<maven:dependency groupid="com.fasterxml.jackson.core" artifactid="jackson-annotations" version="2.13.1" />
+		</maven:dependencies>
+		<path refid="mvn.compile.classpath" classpath="compile" />
+                <files refid="mvn.runtime.libs" classpath="runtime" />
+	</maven:resolve>
 
 	<target name="init" depends="clean">
 		<tstamp /> <!-- Create the timestamp for the build -->
@@ -31,7 +54,12 @@
 
 	<target name="compile" depends="init" description="Compiles all the source files">
 		<!--<javac srcdir="${src}" destdir="${build}" classpath="${include}" /> -->
-		<javac srcdir="${src}" destdir="${build}" classpath="${org.json};${include};${j2ee}" />
+        	<javac srcdir="${src}" destdir="${build}" source="1.8" target="1.8">
+                  <classpath>
+                    <path refid="mvn.compile.classpath" />
+                    <fileset refid="include" />
+                  </classpath>
+                </javac>
     	</target>
 
 
@@ -44,7 +72,14 @@
 			<!-- Copies files from the dict directory to the WEB-INF directory of the war file-->
 			<webinf dir="dict" includes="**/*.dict" />
             <!-- All files in the lib directory will end up in the WEB-INF/lib directory of the war file. -->
-            <lib dir="lib"/>
+            <lib refid="include"/>
+            <mappedresources>
+              <resources refid="mvn.runtime.libs" />
+              <chainedmapper>
+                <flattenmapper/>
+                <globmapper from="*" to="WEB-INF/lib/*"/>
+              </chainedmapper>
+            </mappedresources>
             <!-- All files in the META-INF directory will end up in the META-INF directory of the war file. -->
             <metainf dir="META-INF"/>
             <!-- All files in the build directory will end up in the WEB-INF/classes directory of the war file. -->

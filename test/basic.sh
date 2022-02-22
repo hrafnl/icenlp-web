@@ -2,8 +2,8 @@
 
 #curl http://0.0.0.0:8080/IceNLPWeb/process -H 'Content-Type: application/json' -d '{"type":"text", "content":"hæ"}'
 
-LOC=/process/service
-#LOC=/IceNLPWeb/process
+#LOC=/process/service
+LOC=/IceNLPWeb/process
 
 curl http://0.0.0.0:8080$LOC -H 'Content-Type: application/json' -d '{"type":"text", "content":"hæ"}'
 echo
