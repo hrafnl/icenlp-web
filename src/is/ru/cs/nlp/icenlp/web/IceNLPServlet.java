@@ -69,25 +69,25 @@ public class IceNLPServlet extends HttpServlet
         if( morphyResources.isDictionaryBase == null ) throw new ServletException("Could not locate base dictionary");
         if( morphyResources.isDictionary == null ) throw new ServletException("Could not locate otb dictionary");
         if( morphyResources.isEndingsBase == null ) throw new ServletException("Could not locate endings base dictionary");
-		if( morphyResources.isEndings == null ) throw new ServletException("Could not locate endings dictionary");
-		if( morphyResources.isEndingsProper == null ) throw new ServletException("Could not locate endings proper dictionary");
-		if( morphyResources.isPrefixes == null ) throw new ServletException("Could not locate prefixes dictionary");
-		if( morphyResources.isTagFrequency == null ) throw new ServletException("Could not locate tag frequency dictionary" );
-		if( iceResources.isIdioms == null ) throw new ServletException("Could not locate idioms dictionary" );
-		if( iceResources.isVerbPrep == null ) throw new ServletException("Could not locate verb prep dictionary" );
-		if( iceResources.isVerbObj == null ) throw new ServletException("Could not locate verb obj dictionary");
-		if( iceResources.isVerbAdverb == null ) throw new ServletException("Could not locate verb adverb dictionary" );
+	if( morphyResources.isEndings == null ) throw new ServletException("Could not locate endings dictionary");
+	if( morphyResources.isEndingsProper == null ) throw new ServletException("Could not locate endings proper dictionary");
+	if( morphyResources.isPrefixes == null ) throw new ServletException("Could not locate prefixes dictionary");
+	if( morphyResources.isTagFrequency == null ) throw new ServletException("Could not locate tag frequency dictionary" );
+	if( iceResources.isIdioms == null ) throw new ServletException("Could not locate idioms dictionary" );
+	if( iceResources.isVerbPrep == null ) throw new ServletException("Could not locate verb prep dictionary" );
+	if( iceResources.isVerbObj == null ) throw new ServletException("Could not locate verb obj dictionary");
+	if( iceResources.isVerbAdverb == null ) throw new ServletException("Could not locate verb adverb dictionary" );
 
-		// Overwrite the default dictionary with a one with data from BÍN
+	// Overwrite the default dictionary with a one with data from BÍN
         ServletContext context = getServletContext();
         InputStream binDict = context.getResourceAsStream( "/WEB-INF/otbBin.dict" );
 		morphyResources.setDictionary(binDict);
         
         // For TriTagger
         TriTaggerResources triResources = new TriTaggerResources();
-		if( triResources.isNgrams == null ) throw new ServletException("Could not locate model ngram");
-		if( triResources.isLambda == null ) throw new ServletException( "Could not locate lambdas");
-		if( triResources.isFrequency == null ) throw new ServletException("Could not locate model frequency");
+	if( triResources.isNgrams == null ) throw new ServletException("Could not locate model ngram");
+	if( triResources.isLambda == null ) throw new ServletException( "Could not locate lambdas");
+	if( triResources.isFrequency == null ) throw new ServletException("Could not locate model frequency");
 
         try
         {
@@ -120,12 +120,6 @@ public class IceNLPServlet extends HttpServlet
         this.lemmald = Lemmald.getInstance();
 
     }
-/*
-    protected void doGet( HttpServletRequest request, HttpServletResponse response ) throws ServletException, IOException
-	{
-		doPost( request, response );
-	}
-	*/
 
     private List<TextsResponse.Text> writeTaggedText(Sentences sents, boolean sentLine, boolean markUnknown, boolean english, boolean showLemma)
     {
@@ -188,89 +182,56 @@ public class IceNLPServlet extends HttpServlet
         IceTagger.HmmModelType modelType = IceTagger.HmmModelType.none;
 
 
-        // Get the request handles
-//	response.setContentType("application/json");
-//	response.setCharacterEncoding("UTF-8");
-//        PrintWriter out = response.getWriter();
-
-		TextRequest elgRequest = null;
-		try {
-			InputStream inputStream = request.getInputStream();
-			elgRequest = mapper.readValue(inputStream, TextRequest.class);
-		} catch (Exception e) {
-			// invalid request
-			response.setContentType("application/json");
-			response.setStatus(400);
-			mapper.writeValue(response.getOutputStream(), new Failure().withErrors(StandardMessages.elgRequestInvalid()).asMessage());
-			return;
-		}
+	TextRequest elgRequest = null;
+	try {
+		InputStream inputStream = request.getInputStream();
+		elgRequest = mapper.readValue(inputStream, TextRequest.class);
+	} catch (Exception e) {
+		// invalid request
+		response.setContentType("application/json");
+		response.setStatus(400);
+		mapper.writeValue(response.getOutputStream(), new Failure().withErrors(StandardMessages.elgRequestInvalid()).asMessage());
+		return;
+	}
 
         String query = elgRequest.getContent();
+
+	boolean english = false;
         
-        //boolean english = (request.getParameter("english").equals("true"));
-        boolean english = true;
-	/*
-        if(json_request.has("functions")) 
-        	functions = (json_request.getString("functions").equals("true"));
-        if(json_request.has("phraseline")) 
-        	phraseLine = (json_request.getString("phraseline").equals("true"));
-        if(json_request.has("mergelabels")) 
-        	mergeLabels = (json_request.getString("mergelabels").equals("true"));
-        //if(json_request.has("sentline")) 
-        	//sentLine = (json_request.getString("sentline").equals("true"));
-        if(json_request.has("markunknown")) 
-        	markUnknown = (json_request.getString("markunknown").equals("true"));
-        if(json_request.has("tagger")) 
-            if (json_request.getString("tagger").equals("IceTagger"))
-                modelType = IceTagger.HmmModelType.none;
-            else if (json_request.getString("tagger").equals("HMMIce"))
-                modelType = IceTagger.HmmModelType.start;
-            else if (json_request.getString("tagger").equals("IceHMM"))
-                modelType = IceTagger.HmmModelType.end;
-            else if (json_request.getString("tagger").equals("HMMIceHMM"))
-                modelType = IceTagger.HmmModelType.startend;
+	if(request.getPathInfo().endsWith("/parse")) {
+		// do iceparser
+		try {
+			TextsResponse parsed_query = parse(query, phraseLine, functions, featureAgreement, showErrors, mergeLabels);
+			response.setContentType("application/json");
+			mapper.writeValue(response.getOutputStream(), parsed_query.asMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			response.setContentType("application/json");
+			response.setStatus(500);
+			mapper.writeValue(response.getOutputStream(), new Failure().withErrors(StandardMessages.elgServiceInternalError(e.getMessage())).asMessage());
+		}	
+	} else if(request.getPathInfo().endsWith("/nlp")) {
+		// do icenlp	
+		try {
+			// Tag the query
+			TextsResponse textsResponse = analyse(query, english, sentLine, markUnknown, functions, phraseLine, mergeLabels, featureAgreement, showErrors, modelType, showTokenization, strictTokenization, 0, showLemma);
 
-        //if(json_request.has("showLemma")) 
-        	//showLemma = (json_request.getString("showlemma").equals("true"));
-        //if(json_request.has("showerrors")) 
-        	//showErrors = (json_request.getString("showerrors").equals("true"));
-        if(json_request.has("agreement")) 
-        	featureAgreement = (json_request.getString("agreement").equals("true"));
-
-        // Selection of tokenization.
-        if(json_request.has("showTokenize")) 
-		showTokenization = (json_request.getString("showTokenize").equals("true"));
-        
-        // Selection of the tokenizition type.
-        if(json_request.has("stricktTokenize"))
-        	strictTokenization = (json_request.getString("stricktTokenize").equals("true"));
-        if(json_request.has("inputTokenize")){
-        	inputTokenizeType = json_request.getInt("inputTokenize");
-	}
-*/
-	int inputTokenizeType = 0;
-        // Return the fully tagged and parsed string
-	//response.setContentType("text/html;charset="+defaultEncoding);
-//	out.write("{");
-//	out.write("\"response\":{");
-//	out.write("\"type\":\"texts\"");
-	try {
-		// Tag the query
-		TextsResponse textsResponse = analyse(query, english, sentLine, markUnknown, functions, phraseLine, mergeLabels, featureAgreement, showErrors, modelType, showTokenization, strictTokenization, inputTokenizeType, showLemma);
-
+			response.setContentType("application/json");
+			mapper.writeValue(response.getOutputStream(), textsResponse.asMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			response.setContentType("application/json");
+			response.setStatus(500);
+			mapper.writeValue(response.getOutputStream(), new Failure().withErrors(StandardMessages.elgServiceInternalError(e.getMessage())).asMessage());
+		}
+	} else {
 		response.setContentType("application/json");
-		mapper.writeValue(response.getOutputStream(), textsResponse.asMessage());
-	} catch (Exception e) {
-		e.printStackTrace();
-		response.setContentType("application/json");
-		response.setStatus(500);
-		mapper.writeValue(response.getOutputStream(), new Failure().withErrors(
-				StandardMessages.elgServiceInternalError(e.getMessage())).asMessage());
-	}
-//	out.write("}");
-//	out.write("}");
-//	out.flush();
-	}
+		response.setStatus(400);
+		mapper.writeValue(response.getOutputStream(), new Failure().withErrors(StandardMessages.elgRequestInvalid()).asMessage());
+		return;
+	}	
+
+    }
 
     private void testDict()
     {
@@ -299,7 +260,7 @@ public class IceNLPServlet extends HttpServlet
 
             Sentences sents = itf.tag(query);
             long tagEnd = System.currentTimeMillis();
-
+	    /*
             // Parse
             long parseStart = System.currentTimeMillis();
             if (phraseLine)
@@ -309,12 +270,30 @@ public class IceNLPServlet extends HttpServlet
 
             String parsed = ipf.parse( sents.toString(), outType, functions, featureAgreement, showErrors, mergeLabels );
             long parseEnd = System.currentTimeMillis();
+	    */
 
             return new TextsResponse().withTexts(writeTaggedText(sents, sentLine, markUnknown, english, showLemma));
 
 	    //out.write(",\"parsed\":\"" + parsed.replaceAll( "\n", "|")+"\"");
 
 		}
+    }
+
+    private TextsResponse parse(String query, boolean phraseLine, boolean functions, boolean featureAgreement, boolean showErrors, boolean mergeLabels) {
+	if (phraseLine)
+		outType = OutputFormatter.OutputType.phrase_per_line;
+	else
+		outType = OutputFormatter.OutputType.plain;
+	String parsed = "";
+	try {
+		parsed = ipf.parse( query, outType, functions, featureAgreement, showErrors, mergeLabels );
+	}
+	catch(IOException e) {
+		e.printStackTrace();
+	}
+   	List<TextsResponse.Text> list = new ArrayList<>();
+        list.add(new TextsResponse.Text().withContent(parsed));
+        return new TextsResponse().withTexts(list);
     }
 
     private boolean printWebError( PrintWriter out, String errorstring )

@@ -13,7 +13,7 @@
     
     <servlet-mapping>
 		<servlet-name>IceNLPServlet</servlet-name>
-		<url-pattern>/process</url-pattern>
+		<url-pattern>/process/*</url-pattern>
 	</servlet-mapping>
     
 </web-app>
