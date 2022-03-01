@@ -24,4 +24,4 @@ For testing if the [elg specifications](https://european-language-grid.readthedo
 This ELG API was developed by the [language and voice labs](https://lvl.ru.is/) at [Reykjavík University](https://en.ru.is/) in EU's CEF project: [Microservices at your service](https://www.lingsoft.fi/en/microservices-at-your-service-bridging-gap-between-nlp-research-and-industry).
 
 # European Language Grid
-The docker image is hosted [here](https://hub.docker.com/r/glaciersg/icenlp_api) and is running on the european language grid as [icenlp](https://live.european-language-grid.eu/catalogue/tool-service/17684) and [iceparser](https://live.european-language-grid.eu/catalogue/tool-service/17682) using the two api calls respectively.
+The docker image is hosted [here](https://hub.docker.com/r/glaciersg/icenlp_api) and is running on the european language grid as [IceNLP (running on elg)](https://live.european-language-grid.eu/catalogue/tool-service/17684) and [IceParser - Shallow parser](https://live.european-language-grid.eu/catalogue/tool-service/17682) using the two api calls respectively.
