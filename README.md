@@ -21,4 +21,7 @@ In the test folder can be found basic scripts for testing the functionality of t
 For testing if the [elg specifications](https://european-language-grid.readthedocs.io/en/stable/all/A3_API/LTInternalAPI.html#basic-api-pattern) are being met, you must specify which api you want to test in the `.env` file. Then you run `docker-compose up` and submit the api calls you want to test to `localhost:8080/process/service`
 
 # Funding
-This ELG API was developed by the [language and voice labs](https://lvl.ru.is/) at [Reykjavík University](https://en.ru.is/) in EU's CEF project: [Microservices at your service](https://www.lingsoft.fi/en/microservices-at-your-service-bridging-gap-between-nlp-research-and-industry)
+This ELG API was developed by the [language and voice labs](https://lvl.ru.is/) at [Reykjavík University](https://en.ru.is/) in EU's CEF project: [Microservices at your service](https://www.lingsoft.fi/en/microservices-at-your-service-bridging-gap-between-nlp-research-and-industry).
+
+# European Language Grid
+The docker image is hosted [here](https://hub.docker.com/r/glaciersg/icenlp_api) and is running on the european language grid as [icenlp](https://live.european-language-grid.eu/catalogue/tool-service/17684) and [iceparser](https://live.european-language-grid.eu/catalogue/tool-service/17682) using the two api calls respectively.
