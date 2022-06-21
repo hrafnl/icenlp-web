@@ -27,4 +27,4 @@ This ELG API was developed by the [language and voice labs](https://lvl.ru.is/) 
 The docker image is hosted [here](https://hub.docker.com/r/glaciersg/icenlp_api) and is running on the european language grid as [IceNLP (running on elg)](https://live.european-language-grid.eu/catalogue/tool-service/17684) and [IceParser - Shallow parser](https://live.european-language-grid.eu/catalogue/tool-service/17682) using the two api calls respectively.
 
 # Underlying tool
-The underlying toolkit is [icenlp-web](https://github.com/hrafnl/icenlp-web) by [Hrafn Loftsson](https://github.com/hrafnl). Code from a separate [branch](https://github.com/hrafnl/icenlp-web/tree/icenlp-elg) in the original GitHub repository for the tool is used when the docker image is built. 
+The underlying toolkit is [icenlp-web](https://github.com/hrafnl/icenlp-web) by [Hrafn Loftsson](https://github.com/hrafnl), which is licensed under this [Apache License 2.0](https://github.com/hrafnl/icenlp-web/blob/master/LICENSE). Code from a the [icenlp-elg branch](https://github.com/hrafnl/icenlp-web/tree/icenlp-elg) in the original GitHub repository for the tool is used when the docker image is built. 
